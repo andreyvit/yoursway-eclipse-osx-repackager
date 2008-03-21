@@ -1,0 +1,66 @@
+#! /bin/bash
+
+cocoa_dialog=/Applications/CocoaDialog.app
+
+build_dir="$(cd $(dirname "$0"); pwd)"
+src_dir="$(dirname "$build_dir")"
+dist_dir="$src_dir/dist"
+temp_dir="$src_dir/temp"
+
+function die() {
+  echo "$*"
+  exit 1
+}
+
+while test "${1:0:1}" = "-"; do
+  case $1 in
+    -l)
+      skip_local_changes_check=1
+      shift;;
+    -z)
+      skip_zip=1
+      shift;;
+  esac
+done
+
+function check_no_changes() {
+  status="$(svn st "$1")"
+  test -z "$status" || die "Local changes found in $1. Aborted."
+}
+
+if test -z "$skip_local_changes_check"; then
+  check_no_changes "$src_dir/EclipseOSXRepackager"
+  check_no_changes "$src_dir/EclipseOSXRepackagerUI"
+fi
+
+test -d "$dist_dir" || mkdir -p "$dist_dir"
+
+ver="$("$src_dir/EclipseOSXRepackager" --pure-version)"
+test -z "$ver" && die "Error determining EclipseOSXRepackager version. Aborted."
+
+if test -z "$skip_zip"; then
+  zipfile="$dist_dir/EclipseOSXRepackager-r$ver.zip"
+  zip "$zipfile" "$src_dir/EclipseOSXRepackager"
+  echo "Created $zipfile."
+fi
+
+test -z "$(which platypus)" && die "ERROR: Please install Platypus command-line tool (see http://sveinbjorn.org/platypus)"
+test -d "$cocoa_dialog" || die "CocoaDialog not found in $cocoa_dialog, please install or change the path inside this script"
+
+dmgdir="$temp_dir/Eclipse OS X Repackager r$ver"
+test -d "$dmgdir" && rm -r "$dmgdir"
+mkdir -p "$dmgdir"
+ln -s /Applications "$dmgdir/Applications"
+
+app="$dmgdir/Eclipse OS X Repackager.app"
+test -d "$app" && rm -r "$app"
+
+platypus -a "Eclipse OS X Repackager" -o None -p /bin/bash -V "$ver" -f "$src_dir/EclipseOSXRepackager" -f "$cocoa_dialog" -I org.andreyvit.EclipseOSXRepackager -D "$src_dir/EclipseOSXRepackagerUI" "$app"
+
+if test -z "$skip_zip"; then
+  dmgfile="$dist_dir/EclipseOSXRepackager-r$ver-ui.dmg"
+  test -f "$dmgfile" && rm "$dmgfile"
+  "$src_dir/../create-dmg/create-dmg" --window-size 500 300 --background "$build_dir/background.gif" --icon-size 96 --volname "EclipseOSXRepackager-r$ver-ui" --icon "Applications" 380 205 --icon "Eclipse OS X Repackager" 110 205 "$dmgfile" "$dmgdir"
+  # hdiutil create -srcfolder "$dmgdir" "$dmgfile"
+  echo "Created $dmgfile." 
+fi

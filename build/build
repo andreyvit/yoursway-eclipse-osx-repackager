@@ -12,10 +12,11 @@ function die() {
   exit 1
 }
 
+skip_local_changes_check=${SKIPLC-false}
 while test "${1:0:1}" = "-"; do
   case $1 in
     -l)
-      skip_local_changes_check=1
+      skip_local_changes_check=true
       shift;;
     -z)
       skip_zip=1
@@ -23,23 +24,23 @@ while test "${1:0:1}" = "-"; do
   esac
 done
 
-function check_no_changes() {
-  status="$(svn st "$1")"
-  test -z "$status" || die "Local changes found in $1. Aborted."
-}
+{
+	read ver commitid
+} < <(head -1 ChangeLog | perl -ne "/^Version\\s*([\d\w]+)\\s*\(commit id ([\d\w-]+)\)$/ && print \"\$1 \$2\"")
 
-if test -z "$skip_local_changes_check"; then
-  check_no_changes "$src_dir/EclipseOSXRepackager"
-  check_no_changes "$src_dir/EclipseOSXRepackagerUI"
-fi
+echo "Top ChangeLog line interpreted as: version $ver, commit id $commitid"
+
+$skip_local_changes_check || {
+	head="$(git-rev-parse HEAD)" || die "cannot get a HEAD commit id"
+	test "$head" == "$commitid" || die "wrong commit id (please fix ChangeLog to mention $head)"
+}
 
 test -d "$dist_dir" || mkdir -p "$dist_dir"
 
-ver="$("$src_dir/EclipseOSXRepackager" --pure-version)"
 test -z "$ver" && die "Error determining EclipseOSXRepackager version. Aborted."
 
 if test -z "$skip_zip"; then
-  zipfile="$dist_dir/EclipseOSXRepackager-r$ver.zip"
+  zipfile="$dist_dir/EclipseOSXRepackager-v$ver.zip"
   zip "$zipfile" "$src_dir/EclipseOSXRepackager"
   echo "Created $zipfile."
 fi
@@ -47,7 +48,7 @@ fi
 test -z "$(which platypus)" && die "ERROR: Please install Platypus command-line tool (see http://sveinbjorn.org/platypus)"
 test -d "$cocoa_dialog" || die "CocoaDialog not found in $cocoa_dialog, please install or change the path inside this script"
 
-dmgdir="$temp_dir/Eclipse OS X Repackager r$ver"
+dmgdir="$temp_dir/Eclipse OS X Repackager v$ver"
 test -d "$dmgdir" && rm -r "$dmgdir"
 mkdir -p "$dmgdir"
 ln -s /Applications "$dmgdir/Applications"
@@ -55,12 +56,13 @@ ln -s /Applications "$dmgdir/Applications"
 app="$dmgdir/Eclipse OS X Repackager.app"
 test -d "$app" && rm -r "$app"
 
-platypus -a "Eclipse OS X Repackager" -o None -p /bin/bash -V "$ver" -f "$src_dir/EclipseOSXRepackager" -f "$cocoa_dialog" -I org.andreyvit.EclipseOSXRepackager -D "$src_dir/EclipseOSXRepackagerUI" "$app"
+platypus -FD -a "Eclipse OS X Repackager" -o None -p /bin/bash -V "$ver" -f "$src_dir/EclipseOSXRepackager" -f "$cocoa_dialog" -I org.andreyvit.EclipseOSXRepackager -c "$src_dir/EclipseOSXRepackagerUI" "$app" ||
+	die "fatal: platypus failed."
 
 if test -z "$skip_zip"; then
-  dmgfile="$dist_dir/EclipseOSXRepackager-r$ver-ui.dmg"
+  dmgfile="$dist_dir/EclipseOSXRepackager-v$ver.dmg"
   test -f "$dmgfile" && rm "$dmgfile"
-  "$src_dir/../create-dmg/create-dmg" --window-size 500 300 --background "$build_dir/background.gif" --icon-size 96 --volname "EclipseOSXRepackager-r$ver-ui" --icon "Applications" 380 205 --icon "Eclipse OS X Repackager" 110 205 "$dmgfile" "$dmgdir"
+  "$src_dir/../create-dmg/create-dmg" --window-size 500 310 --background "$build_dir/background.gif" --icon-size 96 --volname "EclipseOSXRepackager-v$ver" --icon "Applications" 380 205 --icon "Eclipse OS X Repackager" 110 205 "$dmgfile" "$dmgdir"
   # hdiutil create -srcfolder "$dmgdir" "$dmgfile"
   echo "Created $dmgfile." 
 fi

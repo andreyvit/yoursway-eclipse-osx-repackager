@@ -41,7 +41,13 @@ test -z "$ver" && die "Error determining EclipseOSXRepackager version. Aborted."
 
 if test -z "$skip_zip"; then
   zipfile="$dist_dir/EclipseOSXRepackager-v$ver.zip"
-  zip "$zipfile" "$src_dir/EclipseOSXRepackager"
+	zipfolder="Eclipse OS X Repackager v$ver"
+	dmgdir="$temp_dir/$zipfolder"
+	test -d "$dmgdir" && rm -r "$dmgdir"
+	mkdir -p "$dmgdir"
+	cp "$src_dir/EclipseOSXRepackager" "$dmgdir/"
+  (cd "$temp_dir"; zip -r "$zipfile" "$zipfolder")
+	rm -rf "$dmgdir"
   echo "Created $zipfile."
 fi
 

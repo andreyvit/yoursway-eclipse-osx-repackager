@@ -96,6 +96,8 @@ source_info_plist="$source_app_dir/Contents/Info.plist"
 source_plugins_dir="$source_dir/plugins"
 source_features_dir="$source_dir/features"
 source_configuration_dir="$source_dir/configuration"
+source_p2_dir="$source_dir/p2"
+source_artifacts_xml="$source_dir/artifacts.xml"
 mv_or_cp_r="cp -r"
 mv_or_cp_desc="Copying"
 
@@ -107,6 +109,9 @@ test -d "$source_plugins_dir"        || fatal_error "directory not found: $sourc
 test -d "$source_features_dir"       || fatal_error "directory not found: $source_features_dir"
 test -d "$source_configuration_dir"  || fatal_error "directory not found: $source_configuration_dir"
 test -f "$source_info_plist"         || fatal_error "expected file to exist: $source_info_plist"
+
+is_p2=false
+test -d "$source_p2_dir" && is_p2=true
 
 ####################################################################################
 #  Detemine target bundle name and location (and check if it exists)
@@ -190,6 +195,16 @@ mkdir "$target_java_dir"
 
 echo "$mv_or_cp_desc configuration area..."
 $mv_or_cp_r $verbose "$source_configuration_dir" "$target_java_dir/configuration"
+
+if test -d "$source_p2_dir"; then
+	echo "$mv_or_cp_desc p2 configuration..."
+	$mv_or_cp_r $verbose "$source_p2_dir" "$target_java_dir/p2"
+fi
+
+if test -f "$source_artifacts_xml"; then
+	echo "$mv_or_cp_desc p2 artifacts..."
+	$mv_or_cp_r $verbose "$source_artifacts_xml" "$target_java_dir/artifacts.xml"
+fi
 
 echo "$mv_or_cp_desc features..."
 $mv_or_cp_r $verbose "$source_features_dir" "$target_java_dir/features"

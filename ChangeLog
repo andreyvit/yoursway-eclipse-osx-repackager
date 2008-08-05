@@ -1,3 +1,10 @@
+Version 11 (commit id d4ea05fd18b38ba6db5593733ce924dbe16e3fe0)
+---------------------------------------------------------------
+
+Added support for Eclipse 3.4 (in particular, for p2-specific
+directories and files).
+
+
 Version 10 (commit id 97694af67f0ccab229d8d06fc62167398d915778)
 ---------------------------------------------------------------
 

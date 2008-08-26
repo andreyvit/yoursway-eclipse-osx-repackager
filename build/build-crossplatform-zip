@@ -1,0 +1,38 @@
+#! /bin/bash
+
+usage() {
+  cat <<'ENDUSAGE'
+This script uses the following variables:
+
+$ver              version (e.g. 1.0.3)
+$1                destination zip file path (e.g. /foo/bar/eclipse-osx-repackager-1.3.zip)
+$2                temp folder path (e.g. /tmp/build)
+$3                source folder path (e.g. /Users/andreyvit/Projects/eclipse-osx-repackager)
+ENDUSAGE
+  exit 13
+}
+test -z "$ver" && usage
+test -z "$3" && usage
+
+die() {
+  echo -e "ERR\t$*"
+  exit 1
+}
+
+zip_file="$1"
+temp_dir="$2"
+src_dir="$3"
+
+zip_dir_name="Eclipse OS X Repackager v$ver"
+zip_temp_dir="$temp_dir/$zip_dir_name"
+
+test -d "$zip_temp_dir" && die "temp folder already exists: $zip_dir"
+
+# copy sources
+mkdir -p "$zip_temp_dir" || die "mkdir -p failed"
+cp "$src_dir/EclipseOSXRepackager" "$zip_temp_dir/" || die "cp failed"
+
+# zip
+(cd "$temp_dir"; zip -r "$zip_file" "$zip_dir_name") || die "zip failed"
+
+echo "Created $zip_file."

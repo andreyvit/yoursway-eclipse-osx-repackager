@@ -1,0 +1,38 @@
+#! /bin/bash
+
+usage() {
+  cat <<'ENDUSAGE'
+This script uses the following variables:
+
+$ver              version (e.g. 1.0.3)
+$1                destination directory path (e.g. /foo/bar/eclipse-osx-repackager.app)
+$2                source folder path (e.g. /Users/andreyvit/Projects/eclipse-osx-repackager)
+$3                path to CocoaDialog.app (e.g. /Applications/CocoaDialog.app)
+ENDUSAGE
+  exit 13
+}
+test -z "$ver" && usage
+test -z "$3" && usage
+
+die() {
+  echo -e "ERR\t$*"
+  exit 1
+}
+
+app_dir="$1"
+src_dir="$2"
+cocoa_dialog="$3"
+
+mkdir -p "$(dirname "$app_dir")"
+test -d "$app_dir" && rmdir "$app_dir"
+test -d "$app_dir" && die "directory already exists and is non-empty: $app_dir"
+
+platypus -FD -a "Eclipse OS X Repackager" -o None -p /bin/bash -V "$ver" \
+  -f "$src_dir/EclipseOSXRepackager" \
+  -f "$cocoa_dialog" \
+  -I org.andreyvit.EclipseOSXRepackager \
+  -c "$src_dir/EclipseOSXRepackagerUI" \
+  "$app_dir" ||
+	die "fatal: platypus failed."
+
+echo "created $app_dir."

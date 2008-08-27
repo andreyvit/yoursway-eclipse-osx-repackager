@@ -1,0 +1,49 @@
+#! /bin/bash
+
+usage() {
+  cat <<'ENDUSAGE'
+This script uses the following variables:
+
+$ver              version (e.g. 1.0.3)
+$1                destination dmg file path (e.g. /foo/bar/eclipse-osx-repackager-1.3.dmg)
+$2                temp folder path (e.g. /tmp/build)
+$3                mac app bundle path (e.g. /tmp/build/Eclipse OS X Repackager.app)
+$4                source folder path (e.g. /Users/andreyvit/Projects/eclipse-osx-repackager)
+ENDUSAGE
+  exit 13
+}
+test -z "$ver" && usage
+test -z "$4" && usage
+
+die() {
+  echo -e "ERR\t$*"
+  exit 1
+}
+
+dmg_file="$1"
+temp_dir="$2"
+app_dir="$3"
+src_dir="$4"
+
+test -f "$dmg_file" && rm -f "$dmg_file"
+
+dmg_temp_dir="$temp_dir/eclipse-osx-repackager-dmg-$ver"
+test -d "$dmg_temp_dir" && die "temp folder already exists: $dmg_temp_dir"
+
+# app_name="$(basename "$app_dir" .app)"
+app_name="Eclipse OS X Repackager"
+
+mkdir -p "$dmg_temp_dir" || die "mkdir -p failed."
+pushd "$dmg_temp_dir"
+ln -s /Applications || die "ln -s /Applications failed."
+cp -r "$app_dir" "./$app_name.app" || die "cp -r failed."
+popd
+
+"/Users/andreyvit/Projects/create-dmg/create-dmg" --window-size 500 310 --icon-size 96 \
+  --background "$src_dir/build/background.gif" --volname "EclipseOSXRepackager-v$ver" \
+  --icon "Applications" 380 205 \
+  --icon "$app_name" 110 205 \
+  "$dmg_file" "$dmg_temp_dir" ||
+  die "create-dmg failed."
+
+echo "created $dmg_file." 

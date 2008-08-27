@@ -9,11 +9,12 @@ $1                destination dmg file path (e.g. /foo/bar/eclipse-osx-repackage
 $2                temp folder path (e.g. /tmp/build)
 $3                mac app bundle path (e.g. /tmp/build/Eclipse OS X Repackager.app)
 $4                source folder path (e.g. /Users/andreyvit/Projects/eclipse-osx-repackager)
+$5                path to create-dmg installation (e.g. /Users/andreyvit/Projects/create-dmg)
 ENDUSAGE
   exit 13
 }
 test -z "$ver" && usage
-test -z "$4" && usage
+test -z "$5" && usage
 
 die() {
   echo -e "ERR\t$*"
@@ -24,6 +25,7 @@ dmg_file="$1"
 temp_dir="$2"
 app_dir="$3"
 src_dir="$4"
+create_dmg_dir="$5"
 
 test -f "$dmg_file" && rm -f "$dmg_file"
 
@@ -39,7 +41,7 @@ ln -s /Applications || die "ln -s /Applications failed."
 cp -r "$app_dir" "./$app_name.app" || die "cp -r failed."
 popd
 
-"/Users/andreyvit/Projects/create-dmg/create-dmg" --window-size 500 310 --icon-size 96 \
+"$create_dmg_dir/create-dmg" --window-size 500 310 --icon-size 96 \
   --background "$src_dir/build/background.gif" --volname "EclipseOSXRepackager-v$ver" \
   --icon "Applications" 380 205 \
   --icon "$app_name" 110 205 \

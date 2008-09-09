@@ -1,6 +1,3 @@
-SET	release-file-prefix	eclipse-osx-repackager-[ver]
-SET	release-descr-prefix	Eclipse OS X Repackager v[ver]
-
 SET	app_name	Eclipse OS X Repackager
 
 FILE	CocoaDialog.zip	-	CocoaDialog.zip	megabox-eclipses
@@ -9,11 +6,11 @@ NEWDIR	CocoaDialog.app	temp	CocoaDialog.app	-
 VERSION	repackager.cur	repackager	heads/master
 VERSION	create-dmg.cur	create-dmg	heads/master
 
-NEWDIR	build.dir	temp	eclipse-osx-repackager-[ver]-build	-
+NEWDIR	build.dir	temp	%-build	-
 
-NEWFILE	repackager-core.zip	featured	[release-file-prefix].zip	[release-descr-prefix] cross-platform console tool
-NEWDIR	repackager.app	temp	[release-file-prefix].app	[release-descr-prefix] application bundle
-NEWFILE	repackager.dmg	featured	[release-file-prefix].dmg	[release-descr-prefix] for Mac OS X
+NEWFILE	repackager-core.zip	featured	%.zip	% cross-platform console tool
+NEWDIR	repackager.app	temp	%.app	% application bundle
+NEWFILE	repackager.dmg	featured	%.dmg	% for Mac OS X
 
 
 COPYTO	[build.dir]
@@ -28,7 +25,7 @@ SUBSTVARS	[build.dir<alter>]/EclipseOSXRepackagerUI	[[]]
 ##############################################################################################################
 
 ZIP	[repackager-core.zip]
-	INTO	[release-file-prefix]/EclipseOSXRepackager	[build.dir]/EclipseOSXRepackager
+	INTO	[build-files-prefix]/EclipseOSXRepackager	[build.dir]/EclipseOSXRepackager
 
 
 ##############################################################################################################
@@ -55,7 +52,7 @@ INVOKE	platypus
 # Mac DMG
 ##############################################################################################################
 
-NEWDIR	dmg_temp_dir	temp	[release-file-prefix]-dmg.tmp	-
+NEWDIR	dmg_temp_dir	temp	%-dmg.tmp	-
 
 COPYTO	[dmg_temp_dir]
 	SYMLINK	Applications	/Applications

@@ -9,9 +9,9 @@ function fatal_error() {
 }
 
 function version() {
-  rev="$(echo '$Revision: 10 $' | perl -ne 'if(/Revision:\s*(\d+)/) {print $1} else {print "UNKNOWN"}')"
+  rev="[[ver]]"
   if test -z "$1"; then
-    echo "EclipseOSXRepackager r$rev"
+    echo "YourSway Eclipse OS X Repackager $rev"
   else
     echo -n "$rev"
   fi

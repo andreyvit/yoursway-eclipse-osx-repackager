@@ -8,7 +8,7 @@ if ! test -z "$TEST_REPACKAGER_UI"; then
   WORKER="./EclipseOSXRepackager"
 fi
 
-title="Eclipse OS X Repackager"
+title="Eclipse OS X Repackager [[ver]]"
 
 function display_fatal_error() {
   "$DLG" msgbox --title "$title" --text "Fatal error" --informative-text "$1" --button1 "Give up and exit"

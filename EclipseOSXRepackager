@@ -106,7 +106,6 @@ mv_or_cp_desc="Copying"
 #  Additional checks
 
 test -d "$source_plugins_dir"        || fatal_error "directory not found: $source_plugins_dir"
-test -d "$source_features_dir"       || fatal_error "directory not found: $source_features_dir"
 test -d "$source_configuration_dir"  || fatal_error "directory not found: $source_configuration_dir"
 test -f "$source_info_plist"         || fatal_error "expected file to exist: $source_info_plist"
 
@@ -206,8 +205,10 @@ if test -f "$source_artifacts_xml"; then
 	$mv_or_cp_r $verbose "$source_artifacts_xml" "$target_java_dir/artifacts.xml"
 fi
 
-echo "$mv_or_cp_desc features..."
-$mv_or_cp_r $verbose "$source_features_dir" "$target_java_dir/features"
+test -d "$source_features_dir" && {
+  echo "$mv_or_cp_desc features..."
+  $mv_or_cp_r $verbose "$source_features_dir" "$target_java_dir/features"
+}
 
 echo "$mv_or_cp_desc plugins..."
 $mv_or_cp_r $verbose "$source_plugins_dir" "$target_java_dir/plugins"

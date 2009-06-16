@@ -138,7 +138,9 @@ fi
 #  Find the launcher
 
 launcher_jar="$(cd $source_plugins_dir; ls -1 org.eclipse.equinox.launcher_*)"
-launcher_fragment_jar="$(cd $source_plugins_dir; ls -1 org.eclipse.equinox.launcher.carbon.macosx_*/eclipse*.so)"
+launcher_fragment_jar="$(cd $source_plugins_dir; ls -1 org.eclipse.equinox.launcher.cocoa.macosx*/eclipse*.so)"
+test -z "$launcher_fragment_jar" &&
+  launcher_fragment_jar="$(cd $source_plugins_dir; ls -1 org.eclipse.equinox.launcher.carbon.macosx_*/eclipse*.so)"
 
 test -z "$launcher_jar"          && fatal_error "cannot find launcher jar (org.eclipse.equinox.launcher_*)"
 test -z "$launcher_fragment_jar" && fatal_error "cannot find launcher fragment jar (org.eclipse.equinox.launcher.carbon.macosx_*)"
